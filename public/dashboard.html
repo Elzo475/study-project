@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BrainHive Dashboard</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<header>
+    <div class="container">
+        <a href="index.html" class="logo"><img src="images/logo.png" alt="BrainHive logo" class="logo-img"><span>BrainHive</span></a>
+        <nav>
+            <ul class="nav-links">
+                <li><a href="/">Home</a></li>
+                <li id="premium-status"></li>
+                <li><a href="/logout" class="btn-primary">Logout</a></li>
+            </ul>
+        </nav>
+    </div>
+</header>
+
+<section class="dashboard container">
+    <h1>Welcome, <span id="username"></span>!</h1>
+    <img id="avatar" src="" alt="User Avatar" style="border-radius:50%;width:120px;height:120px;margin:1rem 0;">
+    <p>Your Discord ID: <span id="discord-id"></span></p>
+    <p id="premium-text"></p>
+    <button id="buy-premium" class="btn-primary">Buy Premium</button>
+</section>
+
+<script>
+async function loadDashboard() {
+    const res = await fetch('/api/user'); // new endpoint to get session info
+    if (!res.ok) return window.location.href = '/login';
+    const user = await res.json();
+
+    document.getElementById('username').textContent = user.username;
+    document.getElementById('avatar').src = `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png`;
+    document.getElementById('discord-id').textContent = user.id;
+
+    // Check premium status
+    if (user.premium) {
+        document.getElementById('premium-text').textContent = "You are a Premium member!";
+        document.getElementById('buy-premium').style.display = 'none';
+    } else {
+        document.getElementById('premium-text').textContent = "You are not a Premium member.";
+        document.getElementById('buy-premium').style.display = 'inline-block';
+    }
+
+    document.getElementById('buy-premium').addEventListener('click', () => {
+        alert('Here we will open Stripe/PayPal checkout in next step.');
+    });
+}
+
+loadDashboard();
+</script>
+</body>
+</html>
