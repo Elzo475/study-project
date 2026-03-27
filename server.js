@@ -1,18 +1,19 @@
-require('dotenv').config();
 const express = require('express');
+const path = require('path');
 const session = require('express-session');
 const axios = require('axios');
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Serve static files
-app.use(express.static('.'));
+// Serve the current folder (where server.js is) as static files
+app.use(express.static(path.join(__dirname)));  // <-- serve root folder
 
-// JSON + URL encoded parser (future extensibility)
+// JSON + URL parser
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Session setup
+// Session
 app.use(session({
     secret: process.env.SESSION_SECRET || 'YOUR_SECRET_KEY',
     resave: false,
@@ -20,35 +21,38 @@ app.use(session({
     cookie: {
         secure: process.env.NODE_ENV === 'production',
         httpOnly: true,
-        maxAge: 24 * 60 * 60 * 1000 // 1 day
+        maxAge: 24 * 60 * 60 * 1000
     }
 }));
 
-// Helper: check if logged in
+// Helper
 function isLoggedIn(req, res, next) {
     if (req.session.user) return next();
     return res.redirect('/login');
 }
 
-// Login route (redirect to Discord OAuth2)
+// Root route
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'index.html'));
+});
+
+// Login route
 app.get('/login', (req, res) => {
     if (!process.env.CLIENT_ID || !process.env.CLIENT_SECRET || !process.env.BASE_URL) {
         return res.status(500).send('Discord OAuth settings are not configured');
     }
-
     const redirect = encodeURIComponent(`${process.env.BASE_URL}/auth/discord/callback`);
     res.redirect(
         `https://discord.com/api/oauth2/authorize?client_id=${process.env.CLIENT_ID}&redirect_uri=${redirect}&response_type=code&scope=identify`
     );
 });
 
-// Discord OAuth2 callback
+// Discord OAuth callback
 app.get('/auth/discord/callback', async (req, res) => {
     const code = req.query.code;
     if (!code) return res.status(400).send('No code provided');
 
     try {
-        // Exchange code for access token
         const tokenResponse = await axios.post(
             'https://discord.com/api/oauth2/token',
             new URLSearchParams({
@@ -64,12 +68,11 @@ app.get('/auth/discord/callback', async (req, res) => {
 
         const accessToken = tokenResponse.data.access_token;
 
-        // Get user info
         const userResponse = await axios.get('https://discord.com/api/users/@me', {
             headers: { Authorization: `Bearer ${accessToken}` }
         });
 
-        req.session.user = userResponse.data; // store user in session
+        req.session.user = userResponse.data;
         return res.redirect('/dashboard.html');
     } catch (err) {
         console.error('OAuth callback error:', err?.response?.data || err.message || err);
@@ -77,12 +80,12 @@ app.get('/auth/discord/callback', async (req, res) => {
     }
 });
 
-// Dashboard route (optional server-side check, still static page served)
+// Dashboard route
 app.get('/dashboard', isLoggedIn, (req, res) => {
-    return res.redirect('/dashboard.html');
+    res.sendFile(path.join(__dirname, 'dashboard.html'));
 });
 
-// API: return current user info + premium status
+// API for frontend
 app.get('/api/user', (req, res) => {
     if (!req.session.user) return res.status(401).json({ error: 'Not logged in' });
 
@@ -93,31 +96,19 @@ app.get('/api/user', (req, res) => {
         premium: false
     };
 
-    const premiumServiceUrl = process.env.PREMIUM_SERVICE_URL || 'http://localhost:4000/api/check-premium';
-
-    axios
-        .get(`${premiumServiceUrl}/${req.session.user.id}`)
-        .then((premiumRes) => {
-            return res.json({ ...defaultUser, premium: premiumRes.data?.premium === true });
-        })
-        .catch((err) => {
-            console.warn('Premium API failed, falling back to false:', err?.message || err);
-            return res.json(defaultUser);
-        });
+    return res.json(defaultUser);  // for now, just basic
 });
 
-// Logout route
+// Logout
 app.get('/logout', (req, res) => {
-    req.session.destroy((err) => {
-        if (err) {
-            console.error('Session destroy error:', err);
-        }
+    req.session.destroy(err => {
+        if (err) console.error(err);
         res.clearCookie('connect.sid');
         res.redirect('/');
     });
 });
 
-// Optional catch-all 404 (for API and dynamic endpoints)
+// Catch-all
 app.use((req, res) => {
     res.status(404).send('404 - Not found');
 });

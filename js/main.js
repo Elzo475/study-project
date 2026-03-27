@@ -1,4 +1,28 @@
 ﻿// common behavior for header auth and mobile menu
+async function updateHeroButtons() {
+    const loginBtn = document.getElementById('hero-login');
+    const dashboardBtn = document.getElementById('hero-dashboard');
+
+    try {
+        const res = await fetch('/api/user');
+
+        if (res.ok) {
+            // user logged in
+            if (loginBtn) loginBtn.style.display = 'none';
+            if (dashboardBtn) dashboardBtn.style.display = 'inline-block';
+        } else {
+            // not logged in
+            if (loginBtn) loginBtn.style.display = 'inline-block';
+            if (dashboardBtn) dashboardBtn.style.display = 'none';
+        }
+    } catch {
+        if (loginBtn) loginBtn.style.display = 'inline-block';
+        if (dashboardBtn) dashboardBtn.style.display = 'none';
+    }
+}
+
+updateHeroButtons();
+
 
 window.addEventListener('DOMContentLoaded', () => {
     const mobileMenu = document.querySelector('.mobile-menu');
