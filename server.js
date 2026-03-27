@@ -122,4 +122,21 @@ app.use((req, res) => {
     res.status(404).send('404 - Not found');
 });
 
-app.listen(PORT, '0.0.0.0', () => console.log(`Server running on port ${PORT}`));
+// Express error-handling middleware (4 args required by Express)
+// eslint-disable-next-line no-unused-vars
+app.use((err, req, res, next) => {
+    console.error('Express error handler caught:', err);
+    res.status(err.status || 500).send('Internal Server Error');
+});
+
+try {
+    const server = app.listen(PORT, '0.0.0.0', () => console.log(`Server running on port ${PORT}`));
+
+    server.on('error', (err) => {
+        console.error('Server bind/listen error:', err);
+        process.exit(1);
+    });
+} catch (err) {
+    console.error('Failed to start server:', err);
+    process.exit(1);
+}
