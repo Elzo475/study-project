@@ -52,18 +52,33 @@ async function initAuthHeader() {
         if (res.ok) {
             const user = await res.json();
             authContainer.innerHTML = `
-                <li><a href="/dashboard.html" class="btn-primary">Dashboard</a></li>
+                <li><a href="/dashboard" class="btn-primary">Dashboard</a></li>
                 <li><a href="/logout" class="btn-secondary">Logout</a></li>
                 <li class="logged-user">${user.username}</li>
             `;
             document.body.classList.add('logged-in');
+            // Show dashboard button, hide login button in hero
+            const heroLogin = document.getElementById('hero-login');
+            const heroDashboard = document.getElementById('hero-dashboard');
+            if (heroLogin) heroLogin.style.display = 'none';
+            if (heroDashboard) heroDashboard.style.display = 'inline-block';
         } else {
             authContainer.innerHTML = `<li><a href="/login" class="btn-primary">Login</a></li>`;
             document.body.classList.remove('logged-in');
+            // Show login button, hide dashboard button in hero
+            const heroLogin = document.getElementById('hero-login');
+            const heroDashboard = document.getElementById('hero-dashboard');
+            if (heroLogin) heroLogin.style.display = 'inline-block';
+            if (heroDashboard) heroDashboard.style.display = 'none';
         }
     } catch (err) {
         console.warn('Failed to fetch auth status', err);
         authContainer.innerHTML = `<li><a href="/login" class="btn-primary">Login</a></li>`;
+        // Default to showing login
+        const heroLogin = document.getElementById('hero-login');
+        const heroDashboard = document.getElementById('hero-dashboard');
+        if (heroLogin) heroLogin.style.display = 'inline-block';
+        if (heroDashboard) heroDashboard.style.display = 'none';
     }
 }
 
