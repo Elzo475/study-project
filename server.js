@@ -31,7 +31,7 @@ app.use(session({
     resave: false,
     saveUninitialized: false,
     cookie: {
-        secure: true,          // required for Railway (HTTPS)
+        secure: process.env.NODE_ENV === 'production',
         httpOnly: true,
         sameSite: 'lax',       // 🔥 VERY IMPORTANT
         maxAge: 24 * 60 * 60 * 1000 // 1 day
@@ -135,7 +135,7 @@ app.get('/auth/discord/callback', async (req, res) => {
         });
 
         req.session.user = userResponse.data;
-        return res.redirect('/dashboard.html');
+        return res.redirect('/dashboard');
     } catch (err) {
         console.error('OAuth callback error:', err?.response?.data || err.message || err);
         return res.status(500).send('Error logging in');
