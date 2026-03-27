@@ -25,14 +25,16 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Session
+app.set('trust proxy', 1);
 app.use(session({
     secret: process.env.SESSION_SECRET || 'YOUR_SECRET_KEY',
     resave: false,
     saveUninitialized: false,
     cookie: {
-        secure: process.env.NODE_ENV === 'production',
+        secure: true,          // required for Railway (HTTPS)
         httpOnly: true,
-        maxAge: 24 * 60 * 60 * 1000
+        sameSite: 'lax',       // 🔥 VERY IMPORTANT
+        maxAge: 24 * 60 * 60 * 1000 // 1 day
     }
 }));
 
