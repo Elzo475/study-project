@@ -122,4 +122,23 @@ app.use((req, res) => {
     res.status(404).send('404 - Not found');
 });
 
-app.listen(PORT, '0.0.0.0', () => console.log(`Server running on port ${PORT}`));
+// Express error-handling middleware — must have 4 arguments so Express
+// recognises it as an error handler rather than a regular middleware.
+app.use((err, req, res, next) => {
+    console.error('Express error handler caught:', err);
+    res.status(500).send('Internal Server Error');
+});
+
+try {
+    const server = app.listen(PORT, '0.0.0.0', () => {
+        console.log(`Server running on port ${PORT}`);
+    });
+
+    server.on('error', (err) => {
+        console.error('Server listen error:', err);
+        process.exit(1);
+    });
+} catch (err) {
+    console.error('Failed to start server:', err);
+    process.exit(1);
+}
