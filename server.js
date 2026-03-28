@@ -138,7 +138,13 @@ app.get('/auth/discord/callback', async (req, res) => {
         });
 
         req.session.user = userResponse.data;
-        return res.redirect('/dashboard');
+        req.session.save(err => {
+            if (err) {
+                console.error('Session save error:', err);
+                return res.status(500).send('Error saving session');
+            }
+            return res.redirect('/dashboard');
+        });
     } catch (err) {
         console.error('OAuth callback error:', err?.response?.data || err.message || err);
         return res.status(500).send('Error logging in');
