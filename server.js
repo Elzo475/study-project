@@ -18,26 +18,28 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const BOT_API_URL = process.env.BOT_API_URL || null;
 
-// Serve the current folder (where server.js is) as static files
-app.use(express.static(path.join(__dirname)));  // <-- serve root folder
-
 // JSON + URL parser
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Session
 app.set('trust proxy', 1);
+const isSecureCookie = process.env.NODE_ENV === 'production' && String(process.env.BASE_URL || '').startsWith('https://');
 app.use(session({
     secret: process.env.SESSION_SECRET || 'YOUR_SECRET_KEY',
     resave: false,
     saveUninitialized: false,
     cookie: {
-        secure: process.env.NODE_ENV === 'production',
+        secure: isSecureCookie,
         httpOnly: true,
-        sameSite: 'lax',       // keep lax so OAuth redirects still work
+        sameSite: isSecureCookie ? 'none' : 'lax',
         maxAge: 24 * 60 * 60 * 1000 // 1 day
     }
 }));
+
+// Serve the current folder (where server.js is) as static files
+app.use(express.static(path.join(__dirname)));  // <-- serve root folder
+
 
 const { getUserStats, getRecentSessions, getCommandUsage } = require('./stats');
 const { getCollection } = require('./db');
