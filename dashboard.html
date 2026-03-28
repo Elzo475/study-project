@@ -55,25 +55,6 @@
             </div>
         </article>
 
-        <article class="plan-funnel-card">
-            <div class="card-header">
-                <div>
-                    <h2>All-access summary</h2>
-                    <p class="funnel-copy">Every feature is available now. Track sessions, view charts, and manage your study flow.</p>
-                </div>
-                <span class="plan-chip" id="plan-status">All free</span>
-            </div>
-            <ul class="funnel-list" id="premium-benefits-list">
-                <li>Unlimited bot commands</li>
-                <li>Detailed progress charts</li>
-                <li>Session history and insights</li>
-                <li>Community support access</li>
-            </ul>
-            <div class="funnel-footer">
-                <span id="plan-expiry">No billing required</span>
-                <a id="btn-manage-plan" class="btn-primary" href="https://discord.gg/UcZVNb9fXq" target="_blank" rel="noreferrer">Join support</a>
-            </div>
-        </article>
     </div>
 
     <div class="dashboard-stats">
@@ -179,32 +160,6 @@
         </article>
     </div>
 
-    <div class="plans-section">
-        <h2>Available Features</h2>
-        <div class="plan-grid">
-            <article class="plan-card plan-free">
-                <h3>Available now</h3>
-                <p class="plan-brief">Core bot commands and dashboard analytics for everyone.</p>
-                <ul class="feature-list" id="free-features">
-                    <li>✅ Help, ping, stats</li>
-                    <li>✅ Study timer</li>
-                    <li>✅ Role-based access</li>
-                    <li>✅ Bot and session analytics</li>
-                </ul>
-            </article>
-            <article class="plan-card plan-premium" id="premium-plan">
-                <h3>Everything unlocked</h3>
-                <p class="plan-brief">All features are free right now while the advanced tier is prepared.</p>
-                <ul class="feature-list" id="premium-features">
-                    <li>✅ Unlimited bot commands</li>
-                    <li>✅ Advanced moderation tools</li>
-                    <li>✅ Custom command presets</li>
-                    <li>✅ Priority support</li>
-                </ul>
-                <div class="premium-badge" id="premium-badge">Coming soon</div>
-            </article>
-        </div>
-    </div>
 </section>
 
 <footer>
@@ -265,12 +220,12 @@ async function loadDashboard() {
         document.getElementById('plan-expiry').textContent = 'No billing required';
 
         const premiumText = document.getElementById('premium-text');
-        const premiumBadge = document.getElementById('premium-badge');
         const upgradeBtn = document.getElementById('btn-update-plan');
         const managePlanBtn = document.getElementById('btn-manage-plan');
 
-        premiumText.textContent = 'All features are available for everyone right now.';
-        premiumBadge.style.display = 'none';
+        if (premiumText) {
+            premiumText.textContent = 'All features are available for everyone right now.';
+        }
         if (upgradeBtn) {
             upgradeBtn.textContent = 'Join Support';
             upgradeBtn.href = 'https://discord.gg/UcZVNb9fXq';
@@ -280,9 +235,13 @@ async function loadDashboard() {
             managePlanBtn.textContent = 'Join support';
         }
 
-        document.getElementById('premium-plan').classList.remove('plan-active');
-
-        const stats = user.userStats || {};
+        const stats = {
+            total_sessions: user.total_sessions || 0,
+            total_hours: user.total_hours || 0,
+            streak: user.streak || 0,
+            longest_streak: user.longest_streak || 0,
+            goal_hours: user.goal_hours || 100
+        };
         const botStats = user.botStats || {};
 
         document.getElementById('stat-sessions').textContent = stats.total_sessions || 0;
