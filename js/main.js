@@ -4,7 +4,7 @@ async function updateHeroButtons() {
     const dashboardBtn = document.getElementById('hero-dashboard');
 
     try {
-        const res = await fetch('/api/user');
+        const res = await fetch('/api/user', { credentials: 'include' });
 
         if (res.ok) {
             // user logged in
@@ -48,7 +48,7 @@ async function initAuthHeader() {
     if (!authContainer) return;
 
     try {
-        const res = await fetch('/api/user');
+        const res = await fetch('/api/user', { credentials: 'include' });
         if (res.ok) {
             const user = await res.json();
             authContainer.innerHTML = `

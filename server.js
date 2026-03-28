@@ -31,9 +31,9 @@ app.use(session({
     resave: false,
     saveUninitialized: false,
     cookie: {
-        secure: true,
+        secure: process.env.NODE_ENV === 'production',
         httpOnly: true,
-        sameSite: 'lax',       // 🔥 VERY IMPORTANT
+        sameSite: 'lax',       // keep lax so OAuth redirects still work
         maxAge: 24 * 60 * 60 * 1000 // 1 day
     }
 }));

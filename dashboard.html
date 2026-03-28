@@ -221,16 +221,22 @@ document.body.classList.add('loading');
 async function loadDashboard() {
     const loader = document.getElementById('dashboard-loader');
     try {
+        const fetchOptions = { credentials: 'include' };
         const [userRes, statsRes] = await Promise.all([
-            fetch('/api/user'),
-            fetch('/api/stats')
+            fetch('/api/user', fetchOptions),
+            fetch('/api/stats', fetchOptions)
         ]);
 
         if (!userRes.ok) return window.location.href = '/login';
-        if (!statsRes.ok) throw new Error('Unable to fetch dashboard statistics');
 
         const user = await userRes.json();
-        const dashboard = await statsRes.json();
+        let dashboard = {};
+
+        if (statsRes.ok) {
+            dashboard = await statsRes.json();
+        } else {
+            console.warn('Unable to fetch dashboard statistics, showing available user info only.');
+        }
 
         document.getElementById('username').textContent = user.username;
         document.getElementById('avatar').src = user.avatar
